@@ -1,10 +1,10 @@
 import '@/styles/globals.css'
-import AuthContext from '@/context/AuthContext'
+import AuthContext from '@/context/useAuth'
 
 export default function App({ Component, pageProps }) {
   return (
-    <AuthContext>
+    // <AuthContext >
       <Component {...pageProps} />
-    </AuthContext>
+    // </AuthContext>
   )
 }

@@ -18,6 +18,10 @@ let userSchema = new Schema({
     lastName: {
         type: String,
         required: false
+    },
+    preferences: {
+        type: Array,
+        required: true
     }
 })
 
