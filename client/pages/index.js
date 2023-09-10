@@ -227,6 +227,7 @@ function index() {
           Login
         </button>
         <button onClick={() => setClient(true)} style={buttonStyles}>Sign Up</button>
+        <button onClick={() => axios.post('http://localhost:4000/sms')}>Text</button>
       </div>)}
     </div>
 

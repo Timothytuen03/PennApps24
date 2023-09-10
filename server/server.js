@@ -6,14 +6,20 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import passport from "passport";
 import path from "path";
-import connectEnsureLogin from "connect-ensure-login";
-import { MessagingResponse } from('twilio').twiml;
+import twilio from "twilio";
+// import Metaphor from 'metaphor-node';
+// const metaphor = new Metaphor(process.env.METAPHOR_KEY);
+
 // import Metaphor from 'metaphor-node';
 // const metaphor = new Metaphor(process.env.METAPHOR_KEY);
 
 // const __dirname = path.resolve();
 const app = express();
 const corsOptions = { origin: `http://localhost:3000`, credentials: true};
+const client = twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  );
 // const metaphor = new Metaphor(process.env.METAPHOR_KEY);
 
 app.use(cors(corsOptions));
@@ -48,7 +54,8 @@ app.get("/getUser", (req, res) => {
 })
 
 app.get("/api/getArticles", async (req, res) => {
-    let pref = "computer science";
+    // let pref = "computer science";
+    // console.log("user" + req.user)
     // User.findOne({_id: req.user._id}).then((data) => {
     //     console.log(data);
     //     pref = data.preferences;
@@ -58,8 +65,30 @@ app.get("/api/getArticles", async (req, res) => {
     //     numResults: 7, 
     //     startPublishedDate: boundDate
     //   });
-    //   console.log(response);
+    // //   console.log(response);
     //   return response;
+    let keyword = "technology";
+    // User.findOne({username: req.user.username}).then((data) => {
+    //     keyword = data.preferences;
+    // })
+
+    const articleURL = `http://api.mediastack.com/v1/news?access_key=${process.env.ARTICLE_KEY}&keywords=${keyword}&limit=5`
+    try {
+        const response = await fetch(articleURL);
+        const data = await response.json();
+        console.log(data);
+        if (data) {
+            console.log(data.data);
+            console.log("data");
+            console.log(data.data[0]);
+            res.send(data.data);
+        } else {
+            console.error('Error fetching news:', data.message);
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.send(error);
+    }
 })
 
 app.get("/api/getSimilarLast", async (req, res) => {
@@ -91,11 +120,6 @@ app.get("/api/home", (req, res) => {
 app.post("/api/newUser", (req, res) => {
     console.log("new user!")
     console.log(req.body);
-    // const email = req.body.email;
-    // const fName = req.body.firstName;
-    // const lName = req.body.lastName;
-    // const number = req.body.number;
-    // const preferences = req.body.preference;
 
     const newUser = new User({
         username: req.body.username,
@@ -138,6 +162,21 @@ app.post("/api/login", passport.authenticate('local', {failureMessage: true}), (
     console.log(req.user)
     res.send(req.user);
 })
+
+app.post('/sms', (req, res) => {
+    // const twiml = new MessagingResponse();
+  
+    // twiml.message('The Robots are coming! Head for the hills!');
+  
+    // res.type('text/xml').send(twiml.toString());
+    client.messages
+    .create({
+        body: 'Here is your article of the day: ',
+        from: '+18339460125',
+        to: '+17326727245'
+    })
+    .then(message => console.log(message.sid));
+    });
 
 app.listen(process.env.PORT, (req,res) => {
     console.log("server started on port " + process.env.PORT);
